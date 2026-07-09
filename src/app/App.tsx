@@ -13,7 +13,7 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { ChevronLeft, ChevronRight, Github, Brain, Zap, Database, Globe, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Maximize, Minimize } from "lucide-react";
+import { ChevronLeft, ChevronRight, Github, Brain, Zap, Database, Globe, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Maximize, Minimize, StickyNote } from "lucide-react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -703,25 +703,26 @@ function SlideQA() {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 const slides = [
-  { component: Slide01Title, title: "Title" },
-  { component: Slide02Problem, title: "Problem" },
-  { component: Slide03Objectives, title: "Objectives" },
-  { component: Slide04RelatedWork, title: "Related Work" },
-  { component: Slide04Architecture, title: "Architecture" },
-  { component: Slide05DataFlow, title: "Data Flow" },
-  { component: Slide06FeatureEngineering, title: "Features" },
-  { component: SlideDataset, title: "Dataset" },
-  { component: Slide07Models, title: "ML Models" },
-  { component: Slide08Results, title: "Results" },
-  { component: Slide09TechStack, title: "Stack" },
-  { component: Slide10FeatureImportance, title: "Explainability" },
-  { component: Slide11Conclusion, title: "Conclusion" },
-  { component: SlideQA, title: "Q & A" },
+  { component: Slide01Title, title: "Title", notes: "My thesis explores how ML can be embedded directly into an invoicing platform to predict late payments and forecast revenue in real time. The platform is called Rechly — I built it as an open-source tool for freelancers and small businesses in Germany." },
+  { component: Slide02Problem, title: "Problem", notes: "Freelancers get paid late all the time. Existing tools just record what happened — they don't warn you before it happens. I wanted to flip that: give people a risk score the moment they create an invoice, so they can follow up proactively." },
+  { component: Slide03Objectives, title: "Objectives", notes: "Four goals: build a low-latency ML API, produce revenue forecasts, integrate it seamlessly into the web app with graceful degradation, and evaluate everything properly with time-based splits so there's no data leakage." },
+  { component: Slide04RelatedWork, title: "Related Work", notes: "Prior work in credit risk and financial ML informed my design. The key gap I found: no open-source invoicing tool integrates real-time ML predictions. They all do analytics after the fact." },
+  { component: Slide04Architecture, title: "Architecture", notes: "Three-tier setup. Frontend is Next.js 16 with React and Ant Design. Appwrite handles auth and the database. The ML service is a separate Django app — completely optional. If it's down, the web app still works; you just don't get risk scores." },
+  { component: Slide05DataFlow, title: "Data Flow", notes: "When an invoice is created, the Next.js API route calls the ML service over REST with a bearer token. The ML service loads client history from Appwrite, computes features, runs the model, and returns a risk score — all under 200ms." },
+  { component: Slide06FeatureEngineering, title: "Features", notes: "Nine features total. Most important are client-level: historical late rate, average days late, overdue rate. Then invoice-level: amount, days until due. Everything computed using only data available at prediction time — no future leakage. The split is chronological." },
+  { component: SlideDataset, title: "Dataset", notes: "Platform launched December 2025, currently 17 users. Since real data is still limited, models train on synthetic data generated from realistic invoice patterns. As we grow, we retrain on real data. Split is temporal — 70/15/15." },
+  { component: Slide07Models, title: "ML Models", notes: "Two models. Late payment classifier compares GradientBoosting vs LogisticRegression, picks winner by PR-AUC on validation set, returns probability + risk label. Revenue forecaster is GradientBoostingRegressor with lag features and rolling averages — gives 30 and 90-day forecasts." },
+  { component: Slide08Results, title: "Results", notes: "91.2% accuracy on held-out test set. Precision 87, recall 84, F1 nearly 86. Revenue forecasting: 6.8% MAPE over 90-day horizon. These numbers are from synthetic evaluation — they'll improve as real data comes in, but the pipeline is solid." },
+  { component: Slide09TechStack, title: "Stack", notes: "Everything is open source. Next.js 16, React 19, Zustand for state, Ant Design for UI. Backend is Appwrite. ML service is Django REST with scikit-learn. Deployed on DigitalOcean for web app, Heroku for ML. Artifacts saved with joblib." },
+  { component: Slide10FeatureImportance, title: "Explainability", notes: "Most predictive feature is client_late_rate — how often this client has paid late before. Powerful because it gives early warning before the due date passes. Invoice amount and recency also matter, but client history dominates." },
+  { component: Slide11Conclusion, title: "Conclusion", notes: "What I built: production ML API under 200ms, temporal-safe feature engineering, 91% accuracy classifier, 6.8% MAPE forecaster. All open source under AGPL-3.0, two repos on GitHub. Future: graph-based risk, real-time streaming, multi-currency, LLM anomaly detection." },
+  { component: SlideQA, title: "Q & A", notes: "Likely questions: Why not deep learning? → Data is small and tabular, gradient boosting wins here. Why synthetic data? → 17 users in 7 months, not enough real invoices yet. Practical impact? → Freelancer sees 'high risk' and follows up immediately. Why two repos? → Separation of concerns, ML can scale independently." },
 ];
 
 export default function App() {
   const [current, setCurrent] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   const prev = useCallback(() => setCurrent((c) => Math.max(0, c - 1)), []);
   const next = useCallback(() => setCurrent((c) => Math.min(slides.length - 1, c + 1)), []);
@@ -747,6 +748,7 @@ export default function App() {
       if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") next();
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") prev();
       if (e.key === "f" || e.key === "F") toggleFullscreen();
+      if (e.key === "n" || e.key === "N") setShowNotes((v) => !v);
       if (e.key === "Escape" && isFullscreen) document.exitFullscreen();
     }
     window.addEventListener("keydown", onKey);
@@ -777,8 +779,15 @@ export default function App() {
           </div>
           <SlideNumber current={current + 1} total={slides.length} />
           <button
+            onClick={() => setShowNotes((v) => !v)}
+            className={`ml-2 p-1.5 border transition-colors ${showNotes ? "text-primary border-primary/50" : "text-muted-foreground border-border hover:text-primary hover:border-primary/50"}`}
+            title="Toggle speaker notes (N)"
+          >
+            <StickyNote size={12} />
+          </button>
+          <button
             onClick={toggleFullscreen}
-            className="ml-2 p-1.5 text-muted-foreground hover:text-primary border border-border hover:border-primary/50 transition-colors"
+            className="ml-1 p-1.5 text-muted-foreground hover:text-primary border border-border hover:border-primary/50 transition-colors"
             title="Toggle fullscreen (F)"
           >
             {isFullscreen ? <Minimize size={12} /> : <Maximize size={12} />}
@@ -803,6 +812,17 @@ export default function App() {
 
         <ProgressBar current={current + 1} total={slides.length} />
       </div>
+
+      {/* Speaker Notes Panel */}
+      {showNotes && (
+        <div className="border-t border-border bg-card px-6 py-4 shrink-0 max-h-[25%] overflow-y-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-mono text-xs text-primary uppercase tracking-widest">Speaker Notes</span>
+            <span className="font-mono text-xs text-muted-foreground">( N to toggle )</span>
+          </div>
+          <p className="text-sm text-foreground leading-relaxed">{slides[current].notes}</p>
+        </div>
+      )}
 
       {/* Bottom nav */}
       <div className={`flex items-center justify-between px-6 py-3 border-t border-border shrink-0 transition-opacity duration-300 ${isFullscreen ? "opacity-0 hover:opacity-100" : ""}`}>
