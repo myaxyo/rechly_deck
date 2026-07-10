@@ -716,7 +716,7 @@ const slides = [
   { component: Slide09TechStack, title: "Stack", notes: "Everything is open source. Next.js 16, React 19, Zustand for state, Ant Design for UI. Backend is Appwrite. ML service is Django REST with scikit-learn. Deployed on DigitalOcean for web app, Heroku for ML. Artifacts saved with joblib." },
   { component: Slide10FeatureImportance, title: "Explainability", notes: "Most predictive feature is client_late_rate — how often this client has paid late before. Powerful because it gives early warning before the due date passes. Invoice amount and recency also matter, but client history dominates." },
   { component: Slide11Conclusion, title: "Conclusion", notes: "What I built: production ML API under 200ms, temporal-safe feature engineering, 91% accuracy classifier, 6.8% MAPE forecaster. All open source under AGPL-3.0, two repos on GitHub. Future: graph-based risk, real-time streaming, multi-currency, LLM anomaly detection." },
-  { component: SlideQA, title: "Q & A", notes: "Likely questions: Why not deep learning? → Data is small and tabular, gradient boosting wins here. Why synthetic data? → 17 users in 7 months, not enough real invoices yet. Practical impact? → Freelancer sees 'high risk' and follows up immediately. Why two repos? → Separation of concerns, ML can scale independently." },
+  { component: SlideQA, title: "Q & A", notes: "" },
 ];
 
 export default function App() {
